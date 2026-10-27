@@ -4,12 +4,25 @@
 
 <h1 align="center">Prompt Vault</h1>
 
+---
+
 <p align="center">
-  Your personal prompt library. Every AI prompt you have ever written, saved in one calm place, searchable in seconds, and backed up to your own Google Drive.
+  <b>Your personal prompt library. Every AI prompt you have ever written, saved in one calm place, searchable in seconds, and backed up to your own Google Drive.</b>
 </p>
 
 <p align="center">
-  <b>Version 0.1.0</b> · Windows · macOS · Linux
+  <a href="https://github.com/heyysam1/prompt-vault/releases"><img src="https://img.shields.io/badge/release-v0.1.0-brightgreen" alt="Release v0.1.0" /></a>
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platform: Windows, macOS, Linux" />
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-brightgreen" alt="License: MIT" /></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/heyysam1/prompt-vault/releases/latest">Download Prompt Vault (v0.1.0)</a> •
+  <a href="#-features">Features</a> •
+  <a href="#-screenshots">Screenshots</a> •
+  <a href="#security-overview">Security</a> •
+  <a href="#-privacy">Privacy</a> •
+  <a href="#-license">License</a>
 </p>
 
 ---
@@ -100,49 +113,14 @@ Prompt Vault is designed to be local-first and privacy-conscious:
 - Google sign-in is used only for Drive backup, restore and share publishing, through the Drive scopes the app requests.
 - AI requests go directly from the app to the provider you chose, using your own API key. No prompt content is sent to any Prompt Vault server, because there is none.
 
-## 🚀 Getting started
-
-1. Install Prompt Vault from the [Installation](#installation) section above and open it.
-2. A short 4-step guide appears the first time. Skip it or walk through it; you can replay it later from **Settings → View guide again**.
-3. Add prompts with the **+** button, start from a template, or import your existing files.
-4. Optional: open **Account & Sync** to sign in with Google for Drive backup, and add your AI provider's API key to switch on AI Chat, the editor assistant and meaning-based search.
-
-### One-time Google sign-in setup (app owner)
-
-Google requires every app to use its own free OAuth client before sign-in can run:
-
-1. Open the [Google Cloud Console](https://console.cloud.google.com/) and create a project.
-2. Enable the **Google Drive API**.
-3. Create an **OAuth client ID** of type **Desktop app**.
-4. In Prompt Vault, open **Account & Sync → Google sign-in setup** and paste the Client ID (and the secret, if one is issued).
-
-No code changes are needed. Sign-in activates as soon as the Client ID is saved.
-
-> **Note on availability:** while the Google consent screen is in Testing mode, only email addresses added as test users (up to 100) can sign in. Opening sign-in to everyone requires publishing the consent screen to Production and completing Google's verification for Drive scopes. Local, offline use is not affected by this limit.
-
----
-
-## Deployment
-
-Releases are built and published automatically with GitHub Actions:
-
-1. A maintainer pushes a version tag, for example `v0.1.0`, or runs the **Release Prompt Vault** workflow manually from the Actions tab. Ordinary pushes to `main` do not trigger a release build.
-2. The workflow in `.github/workflows/release.yml` builds the app on Windows, macOS and Linux runners in parallel.
-3. Tauri bundles the installers for each platform (Windows setup and MSI, macOS DMG for Apple Silicon and Intel, Linux AppImage and DEB) and signs the updater artifacts with the project's signing key, provided through the `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` repository secrets.
-4. The finished installers and the updater manifest (`latest.json`) are attached to the GitHub Release for that tag, which is what the download table above and the in-app updater point to.
-
-## 🛠️ Build from source
-
-Requirements: [Node.js](https://nodejs.org/) 18 or newer, [Rust](https://rustup.rs/) (stable), and the [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/) for your operating system.
-
-```bash
-npm install
-npm run tauri dev      # run the app in development mode
-npm run tauri build    # build installers for your own OS
-```
-
-**Tech:** Tauri v2 + Rust for a tiny, fast native app; a Vite + vanilla JavaScript frontend; local JSON storage with Google Drive `appDataFolder` backup.
-
 ## 📄 License
 
 Prompt Vault is open-source software licensed under the [MIT License](LICENSE).
+
+---
+
+<p align="center">
+  Made by <b>Mohammed Sami</b>
+  <br />
+  <a href="https://github.com/heyysam1">GitHub</a> · <a href="https://heyysami.bond">Personal Website</a>
+</p>
