@@ -1,6 +1,6 @@
 [package]
 name = "prompt-vault"
-version = "1.0.1"
+version = "1.0.2"
 description = "Prompt Vault - your personal prompt library"
 authors = ["Sami"]
 edition = "2021"
