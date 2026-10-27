@@ -10,7 +10,7 @@
 import { toast } from './editor.js';
 import { esc } from './store.js';
 
-const FALLBACK_VERSION = '0.1.0'; // matches package.json / tauri.conf.json
+const FALLBACK_VERSION = '1.0.0'; // matches package.json / tauri.conf.json
 const inTauri = () => !!(window.__TAURI_INTERNALS__ || window.__TAURI__?.core?.invoke);
 
 export async function currentVersion() {
