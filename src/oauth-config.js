@@ -10,5 +10,5 @@
 // the owner can paste a personal Client ID / secret in the "Google sign-in
 // setup" box in Account & Sync, and those values are used instead.
 
-export const BUILT_IN_OAUTH_CLIENT_ID = '';
-export const BUILT_IN_OAUTH_CLIENT_SECRET = '';
+export const BUILT_IN_OAUTH_CLIENT_ID = '634030976876-96bpgm3e0nbnprio644hftcr58ovvj0u.apps.googleusercontent.com';
+export const BUILT_IN_OAUTH_CLIENT_SECRET = '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';
