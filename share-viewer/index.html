@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Shared Prompt · Prompt Vault</title>
+<style>
+  :root { --bg:#FAF6EF; --surface:#FFFFFF; --text:#1F2430; --soft:#5C6370; --border:#E7E0D0; --accent:#1A56DB; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:"Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--text); line-height:1.65; }
+  header { display:flex; align-items:center; gap:10px; padding:16px 22px; max-width:960px; margin:0 auto; }
+  header .mark { width:32px; height:32px; border-radius:9px; background:linear-gradient(135deg,#1A56DB,#7C3AED); display:flex; align-items:center; justify-content:center; color:#fff; font-size:17px; }
+  header b { font-size:16px; }
+  header span { color:var(--soft); font-size:13.5px; }
+  header .sp { flex:1; }
+  #copyBtn { background:var(--accent); color:#fff; border:none; border-radius:999px; padding:10px 22px; font-size:14.5px; font-weight:600; cursor:pointer; font-family:inherit; }
+  #copyBtn:disabled { opacity:.5; cursor:default; }
+  main { max-width:920px; margin:8px auto 70px; padding:0 18px; }
+  .paper { background:var(--surface); border:1px solid var(--border); border-radius:6px; box-shadow:0 8px 30px rgba(31,36,48,.10); padding:52px 60px; min-height:420px; }
+  .paper h1 { font-size:27px; margin:0 0 6px; letter-spacing:-.01em; }
+  .meta { color:var(--soft); font-size:13.5px; margin-bottom:26px; }
+  .content { font-size:16px; }
+  .content img { max-width:100%; border-radius:6px; }
+  .content table { border-collapse:collapse; width:100%; margin:12px 0; }
+  .content td, .content th { border:1px solid #C9CED6; padding:7px 10px; text-align:left; }
+  .content blockquote { border-left:4px solid var(--accent); margin:14px 0; padding:6px 16px; background:#F4F7FE; }
+  .content pre { background:#24262B; color:#F2F2F3; border-radius:10px; padding:14px 16px; white-space:pre-wrap; font-family:inherit; }
+  .content ul.checklist { list-style:none; padding-left:4px; }
+  .content ul.checklist li::before { content:"☐ "; }
+  .state { text-align:center; color:var(--soft); padding:80px 20px; font-size:16px; }
+  .state .big { font-size:42px; display:block; margin-bottom:14px; }
+  footer { text-align:center; color:var(--soft); font-size:13px; padding:0 20px 40px; }
+  footer a { color:var(--accent); text-decoration:none; }
+  #toast { position:fixed; left:50%; bottom:28px; transform:translateX(-50%); background:#1F2430; color:#FAF6EF; padding:11px 22px; border-radius:999px; font-size:14px; display:none; }
+  /* Slim marketing banner (dismissible, this view only) */
+  #pvBanner { position:sticky; top:0; z-index:50; display:flex; align-items:center; gap:10px; background:#FFFFFF; border-bottom:1px solid var(--border); padding:7px 16px; cursor:pointer; }
+  #pvBanner img { width:24px; height:24px; border-radius:6px; }
+  #pvBanner .bt { font-size:13.5px; color:var(--text); }
+  #pvBanner .bt b { font-weight:700; }
+  #pvBanner .sp { flex:1; }
+  #pvBannerGet { background:var(--accent); color:#fff; border:none; border-radius:999px; padding:6px 15px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
+  #pvBannerClose { background:none; border:none; color:var(--soft); font-size:16px; line-height:1; padding:5px 7px; cursor:pointer; border-radius:7px; }
+  #pvBannerClose:hover { background:#F3EEE3; color:var(--text); }
+  @media (max-width:640px){ .paper{ padding:32px 22px; } }
+</style>
+</head>
+<body>
+<div id="pvBanner" role="banner" title="Get Prompt Vault">
+  <img src="logo.png" alt="Prompt Vault logo" onerror="this.style.display='none'" />
+  <span class="bt">Shared with <b>Prompt Vault</b></span>
+  <span class="sp"></span>
+  <button id="pvBannerGet" type="button">Get the app</button>
+  <button id="pvBannerClose" type="button" aria-label="Dismiss banner">×</button>
+</div>
+<header>
+  <div class="mark">✦</div>
+  <div><b>Prompt Vault</b><br /><span>Shared prompt · read-only</span></div>
+  <div class="sp"></div>
+  <button id="copyBtn" disabled>Copy prompt</button>
+</header>
+<main>
+  <div class="paper" id="paper">
+    <div class="state" id="state"><span class="big">✦</span>Loading the shared prompt...</div>
+  </div>
+</main>
+<footer>Shared with <b>Prompt Vault</b>. The owner can stop sharing at any time, which closes this page.</footer>
+<div id="toast">Copied</div>
+
+<script src="config.js"></script>
+<script>
+// Marketing banner: clicking the banner or "Get the app" opens the app's
+// GitHub repository; the x only dismisses the banner for this view.
+(function () {
+  var REPO = window.PV_REPO_URL || 'https://github.com/heyysam1/prompt-vault';
+  var banner = document.getElementById('pvBanner');
+  document.getElementById('pvBannerClose').addEventListener('click', function (e) {
+    e.stopPropagation();
+    banner.style.display = 'none';
+  });
+  banner.addEventListener('click', function () { window.open(REPO, '_blank', 'noopener'); });
+})();
+</script>
+<script>
+(function () {
+  var paper = document.getElementById('paper');
+  var copyBtn = document.getElementById('copyBtn');
+  var plain = '';
+
+  function showError(title, detail) {
+    paper.innerHTML = '<div class="state"><span class="big">🔒</span><b>' + title + '</b><br>' + detail + '</div>';
+  }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+
+  function sanitize(html) {
+    var div = document.createElement('div');
+    div.innerHTML = html || '';
+    div.querySelectorAll('script, iframe, object, embed, form, link, meta, style').forEach(function (n) { n.remove(); });
+    div.querySelectorAll('*').forEach(function (el) {
+      Array.from(el.attributes).forEach(function (a) {
+        if (/^on/i.test(a.name) || (a.name === 'href' && /^javascript:/i.test(a.value))) el.removeAttribute(a.name);
+      });
+    });
+    return div.innerHTML;
+  }
+
+  function render(snap) {
+    if (!snap || (!snap.title && !snap.html && !snap.text)) { showError('Nothing to show', 'This link does not contain a readable prompt.'); return; }
+    plain = snap.text || '';
+    if (!plain) { var d = document.createElement('div'); d.innerHTML = snap.html || ''; plain = d.textContent || ''; }
+    var when = snap.sharedAt ? new Date(snap.sharedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+    paper.innerHTML = '<h1>' + esc(snap.title || 'Untitled prompt') + '</h1>' +
+      '<div class="meta">' + (when ? 'Shared on ' + esc(when) + ' · ' : '') + 'Read-only view</div>' +
+      '<div class="content">' + sanitize(snap.html || ('<p>' + esc(plain).replace(/\n/g, '<br>') + '</p>')) + '</div>';
+    copyBtn.disabled = false;
+  }
+
+  copyBtn.addEventListener('click', function () {
+    navigator.clipboard.writeText(plain).then(function () {
+      var t = document.getElementById('toast');
+      t.style.display = 'block';
+      setTimeout(function () { t.style.display = 'none'; }, 2000);
+    });
+  });
+
+  // Mode 1: the snapshot travels inside the link (#d=<base64url JSON>).
+  var hash = new URLSearchParams(location.hash.slice(1));
+  if (hash.get('d')) {
+    try {
+      var b64 = hash.get('d').replace(/-/g, '+').replace(/_/g, '/');
+      var json = decodeURIComponent(escape(atob(b64)));
+      render(JSON.parse(json));
+      return;
+    } catch (e) { showError('This link looks broken', 'The shared content inside the link could not be read.'); return; }
+  }
+
+  // Mode 2: a public Google Drive file (?f=<fileId>), published by the
+  // Prompt Vault app with an anyone-with-the-link permission.
+  var q = new URLSearchParams(location.search);
+  var fileId = q.get('f');
+  if (!fileId) { showError('No prompt in this link', 'This page needs a share link created by Prompt Vault.'); return; }
+
+  function tryFetch(url) { return fetch(url).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }); }
+  var attempts = [];
+  var key = (window.PV_DRIVE_API_KEY || '').trim();
+  if (key) attempts.push('https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(fileId) + '?alt=media&key=' + encodeURIComponent(key));
+  attempts.push('https://drive.usercontent.google.com/download?id=' + encodeURIComponent(fileId) + '&export=download&confirm=t');
+  if (!key) attempts.push('https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(fileId) + '?alt=media');
+
+  (function next(i) {
+    if (i >= attempts.length) {
+      showError('This link is no longer available',
+        'The owner may have stopped sharing, or the file was removed from Google Drive.<br><br>' +
+        '<a href="https://drive.google.com/file/d/' + esc(fileId) + '/view" target="_blank" rel="noopener" style="color:#1A56DB">Try opening the file on Google Drive</a>');
+      return;
+    }
+    tryFetch(attempts[i]).then(render).catch(function () { next(i + 1); });
+  })(0);
+})();
+</script>
+</body>
+</html>

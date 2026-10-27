@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Prompt Vault</title>
+<link rel="icon" type="image/png" href="/logo.png" />
+</head>
+<body>
+<div id="app">
+  <div id="drawer-backdrop" class="hidden"></div>
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside id="sidebar">
+    <div class="brand">
+      <img src="/logo.png" alt="Prompt Vault logo" class="brand-logo" />
+      <span class="brand-name">Prompt Vault</span>
+    </div>
+    <nav id="main-nav">
+      <button class="nav-item" data-nav="all"><span class="nav-ic">▦</span>All Prompts</button>
+      <button class="nav-item" data-nav="pinned"><span class="nav-ic">📌</span>Pinned</button>
+      <button class="nav-item" data-nav="recent"><span class="nav-ic">🕘</span>Recent</button>
+      <button class="nav-item" data-nav="aichat"><span class="nav-ic">✦</span>AI Chat</button>
+      <button class="nav-item" data-nav="notes"><span class="nav-ic">🗒</span>Notes</button>
+      <button class="nav-item" data-nav="templates"><span class="nav-ic">▤</span>Templates</button>
+      <button class="nav-item" data-nav="insights"><span class="nav-ic">📊</span>Insights</button>
+      <button class="nav-item" data-nav="importexport"><span class="nav-ic">⇅</span>Import / Export</button>
+      <button class="nav-item" data-nav="trash"><span class="nav-ic">🗑</span>Trash</button>
+    </nav>
+    <div class="sidebar-spacer"></div>
+    <nav id="bottom-nav">
+      <button class="nav-item" data-nav="account"><span class="nav-ic">👤</span>Account &amp; Sync</button>
+      <button class="nav-item" data-nav="settings"><span class="nav-ic">⚙</span>Settings</button>
+    </nav>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main id="main">
+    <header id="topbar">
+      <button id="hamburger" aria-label="Menu">☰</button>
+      <span id="topbar-title">Prompt Vault</span>
+    </header>
+    <div id="view-root"></div>
+  </main>
+
+  <!-- Floating + button (All Prompts & Notes only) -->
+  <div id="fab-wrap" class="hidden">
+    <div id="fab-menu" class="hidden"></div>
+    <button id="fab" aria-label="Create new">+</button>
+  </div>
+
+  <!-- Editor view (full page, replaces main content) -->
+  <section id="editor-view" class="hidden"></section>
+
+  <!-- Note editor view -->
+  <section id="note-view" class="hidden"></section>
+
+  <!-- Template preview view -->
+  <section id="template-view" class="hidden"></section>
+
+  <!-- Generic modal mount -->
+  <div id="modal-root"></div>
+
+  <!-- Onboarding mount -->
+  <div id="onboarding-root"></div>
+
+  <div id="toast" class="hidden"></div>
+  <input type="file" id="file-picker" class="hidden" />
+</div>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
