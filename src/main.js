@@ -947,13 +947,13 @@ function renderAccount() {
         <p class="hint">You are signed out. Sign in with Google to back up your library to your Google Drive and restore it on any computer. Everything works offline without signing in.</p>
         <button class="google-btn" id="acc-signin"><span class="g">G</span> Sign in with Google</button>
         <div id="acc-signin-msg" style="margin-top:12px"></div>
-        <details style="margin-top:18px">
+        ${google.hasBuiltInClient() ? '' : `<details style="margin-top:18px">
           <summary style="cursor:pointer;font-weight:600;font-size:14.5px">Google sign-in setup (one time, by the app owner)</summary>
           <p class="hint" style="margin-top:8px">Google requires each app to use its own free OAuth client. In Google Cloud Console: create a project, enable the Google Drive API, create an OAuth client of type <b>Desktop app</b>, then paste its details here. Until this is set, sign-in cannot run, but every other feature works.</p>
           <div class="field"><label>OAuth Client ID</label><input type="text" id="acc-client-id" placeholder="...apps.googleusercontent.com" value="${esc(store.data.settings.googleClientId || '')}" /></div>
           <div class="field"><label>OAuth Client Secret (if your client has one)</label><input type="password" id="acc-client-secret" placeholder="Client secret" value="${esc(store.data.settings.googleClientSecret || '')}" /></div>
           <button class="btn" id="acc-save-client">Save setup</button>
-        </details>`}
+        </details>`}`}
     </div>
 
     <div class="form-card">

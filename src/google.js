@@ -1,19 +1,30 @@
 // Google sign-in (OAuth 2.0 loopback flow for desktop apps) and
 // Google Drive backup in the app's private appDataFolder.
 //
-// IMPORTANT: Google requires an OAuth client of your own. Sami must create
-// a free "Desktop app" OAuth client in Google Cloud Console once and paste
-// the Client ID (and secret, if issued) in Account & Sync. Until then,
-// sign-in reports exactly that, and the rest of the app works fully offline.
-// Client values are stored in settings.googleClientId / googleClientSecret
-// and are read fresh every time, so no code change is ever needed.
+// OAuth client resolution order:
+// 1. The app's built-in client (src/oauth-config.js), filled in by the app
+//    owner once. When present, sign-in works with a single click for every
+//    user and Account & Sync shows no setup box at all.
+// 2. Otherwise, a personal Client ID / secret the owner pasted in the
+//    "Google sign-in setup" box in Account & Sync, stored in
+//    settings.googleClientId / googleClientSecret and read fresh every
+//    time, so no code change is ever needed for that fallback.
 
 import { store } from './store.js';
+import { BUILT_IN_OAUTH_CLIENT_ID, BUILT_IN_OAUTH_CLIENT_SECRET } from './oauth-config.js';
 
 const SCOPES = 'openid email profile https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file';
 const BACKUP_NAME = 'prompt-vault-backup.json';
 
+export function hasBuiltInClient() { return !!(BUILT_IN_OAUTH_CLIENT_ID || '').trim(); }
+
 function clientConfig() {
+  if (hasBuiltInClient()) {
+    return {
+      id: BUILT_IN_OAUTH_CLIENT_ID.trim(),
+      secret: (BUILT_IN_OAUTH_CLIENT_SECRET || '').trim(),
+    };
+  }
   return {
     id: (store.data.settings.googleClientId || '').trim(),
     secret: (store.data.settings.googleClientSecret || '').trim(),
