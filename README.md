@@ -22,6 +22,8 @@
   <a href="#-screenshots">Screenshots</a> •
   <a href="#security-overview">Security</a> •
   <a href="#-privacy">Privacy</a> •
+  <a href="CONTRIBUTING.md">Contributing</a> •
+  <a href="SECURITY.md">Security Policy</a> •
   <a href="#-license">License</a>
 </p>
 
