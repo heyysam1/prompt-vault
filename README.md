@@ -11,13 +11,13 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/heyysam1/prompt-vault/releases"><img src="https://img.shields.io/badge/release-v1.0.0-brightgreen" alt="Release v1.0.0" /></a>
+  <a href="https://github.com/heyysam1/prompt-vault/releases"><img src="https://img.shields.io/badge/release-v1.0.1-brightgreen" alt="Release v1.0.1" /></a>
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platform: Windows, macOS, Linux" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-brightgreen" alt="License: MIT" /></a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/heyysam1/prompt-vault/releases/latest">Download Prompt Vault (v1.0.0)</a> •
+  <a href="https://github.com/heyysam1/prompt-vault/releases/latest">Download Prompt Vault (v1.0.1)</a> •
   <a href="#-features">Features</a> •
   <a href="#-screenshots">Screenshots</a> •
   <a href="#security-overview">Security</a> •
@@ -68,12 +68,12 @@ Everything works fully offline. Your data lives on your computer, and it only go
 
 | Your computer | ⬇️ Download this file | How to install |
 | --- | --- | --- |
-| **Windows 10 / 11** | `Prompt.Vault_1.0.0_x64-setup.exe` | Double-click it and follow the installer |
-| **Windows (alternative)** | `Prompt.Vault_1.0.0_x64_en-US.msi` | Double-click it and follow the installer |
-| **Mac with Apple Silicon** (M1, M2, M3, M4) | `Prompt.Vault_1.0.0_aarch64.dmg` | Open it, then drag **Prompt Vault** into **Applications** |
-| **Mac with an Intel chip** | `Prompt.Vault_1.0.0_x64.dmg` | Open it, then drag **Prompt Vault** into **Applications** |
-| **Linux, any distribution** | `Prompt.Vault_1.0.0_amd64.AppImage` | Right-click → Properties → allow executing as a program, then double-click |
-| **Linux, Ubuntu / Debian / Mint** | `Prompt.Vault_1.0.0_amd64.deb` | Double-click to install with your software centre, or run `sudo dpkg -i <file>` |
+| **Windows 10 / 11** | `Prompt.Vault_1.0.1_x64-setup.exe` | Double-click it and follow the installer |
+| **Windows (alternative)** | `Prompt.Vault_1.0.1_x64_en-US.msi` | Double-click it and follow the installer |
+| **Mac with Apple Silicon** (M1, M2, M3, M4) | `Prompt.Vault_1.0.1_aarch64.dmg` | Open it, then drag **Prompt Vault** into **Applications** |
+| **Mac with an Intel chip** | `Prompt.Vault_1.0.1_x64.dmg` | Open it, then drag **Prompt Vault** into **Applications** |
+| **Linux, any distribution** | `Prompt.Vault_1.0.1_amd64.AppImage` | Right-click → Properties → allow executing as a program, then double-click |
+| **Linux, Ubuntu / Debian / Mint** | `Prompt.Vault_1.0.1_amd64.deb` | Double-click to install with your software centre, or run `sudo dpkg -i <file>` |
 
 **Not sure which Mac you have?** Click the Apple menu → *About This Mac*. If it says "Apple M1" (or M2, M3, M4), download the `aarch64` file. If it says "Intel", download the `x64` file.
 
@@ -105,7 +105,7 @@ Prompt Vault is designed to be local-first and privacy-conscious:
 - **Local first.** Your prompts, notes and settings are stored on your own computer, in the app's data folder. The app works completely offline, and there is no Prompt Vault server collecting your data.
 - **Your cloud, not ours.** Backup and sync go to **your own Google Drive**, in the app's private `appDataFolder` that other apps cannot see. There is no account with us.
 - **Your API key stays yours.** AI features use the API key you provide. Keys are stored in a separate local file on your computer and are **never** included in backups, exports or shared links, and never synced to Google Drive.
-- **OAuth credentials stay local.** The Google OAuth client secret you enter in the app is kept on your device only and is excluded from backup and export files.
+- **Sign-in just works.** Prompt Vault ships with its own built-in Google OAuth client, so Google sign-in works out of the box with a single click. There is nothing for you to set up or enter, and no OAuth credentials of yours are ever collected.
 - **Sharing is explicit.** A prompt is only reachable through a share link if you choose to share that prompt. Sharing publishes a snapshot of that one prompt; stop sharing at any time and the link stops working.
 - **Signed updates.** In-app updates are delivered through Tauri's updater with signed release artifacts, so the app only installs updates that match the project's signing key. The installers themselves are not yet code-signed by an OS certificate, which is why Windows and macOS show the first-launch warnings described above.
 

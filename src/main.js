@@ -1083,7 +1083,7 @@ function renderSettings() {
     </div>
     <div class="form-card">
       <h3>About</h3>
-      <p class="hint"><span id="set-version">Prompt Vault 1.0.0</span> · Your personal prompt library.<br/>Data folder: <span id="set-datapath">this device's app data folder</span><br/>Your library, notes, templates and activity are stored locally and work fully offline. API keys are kept in a separate local file and are never synced or exported.</p>
+      <p class="hint"><span id="set-version">Prompt Vault 1.0.1</span> · Your personal prompt library.<br/>Data folder: <span id="set-datapath">this device's app data folder</span><br/>Your library, notes, templates and activity are stored locally and work fully offline. API keys are kept in a separate local file and are never synced or exported.</p>
       <button class="btn" id="set-check-updates" style="margin-top:10px">Check for updates</button>
     </div>
     <div class="form-card">
