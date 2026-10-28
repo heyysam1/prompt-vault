@@ -1,0 +1,165 @@
+/* Editor fidelity layer — prototype editor chrome values.
+   Loaded after style.css (editor.js is imported after style.css in
+   main.js), so these rules override the .ed-* rules in style.css.
+   Structural fixes live in editor.js markup/inline styles; this file
+   carries the component styling copied from the prototype. */
+
+/* ---------- Header chrome: panel background, hairline separators ---------- */
+.ed-header { background: var(--panel); border-bottom: 1px solid var(--line); padding: 10px 16px 0; }
+.ed-row1 { gap: 10px; }
+.ed-logo { width: 26px; height: 26px; border-radius: 7px; flex: 0 0 26px; }
+.ed-title { font-size: 17px; font-weight: 600; padding: 7px 10px; line-height: 1.4; }
+.ed-row1 .icon-btn {
+  width: 34px; height: 34px; border-radius: 50%; flex: 0 0 34px;
+  display: inline-flex; align-items: center; justify-content: center; padding: 0;
+}
+.ed-back-btn svg { width: 18px; height: 18px; }
+.ed-pin-btn svg { width: 17px; height: 17px; }
+.ed-pin-btn.pinned { color: var(--accent); }
+.ed-pin-btn.pinned svg { fill: var(--accent); }
+.ed-history-btn svg, .ed-menu-btn svg { width: 17px; height: 17px; }
+.save-status {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--ink-3); font-size: 12.5px; white-space: nowrap; flex: 0 0 auto;
+}
+.save-status svg { width: 15px; height: 15px; flex: 0 0 15px; }
+.save-status.saving { color: var(--accent-ink); }
+.save-status.saving svg { color: var(--accent); }
+.share-pill {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 18px; font-size: 13.5px; font-weight: 600;
+}
+.share-pill svg { width: 15px; height: 15px; }
+.share-pill:hover { background: var(--accent-ink); }
+
+/* AI button: bare gradient sparkle, 42px round hit area, hover scale */
+.ai-spark-btn {
+  width: 42px; height: 42px; border-radius: 50%; flex: 0 0 42px;
+  background: transparent; border: none; padding: 0; line-height: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: transform 0.18s ease;
+}
+.ai-spark-btn:hover { background: transparent; transform: scale(1.16); }
+.ai-spark-btn svg { display: block; }
+
+/* Menu row: only File Edit View Insert Format AI */
+.ed-menus { padding: 2px 0 6px; margin-top: 2px; }
+.ed-menus > button { font-size: 13.5px; font-weight: 500; padding: 5px 10px; }
+
+/* ---------- Pill toolbar with SVG icons ---------- */
+.ed-toolbar { margin: 4px auto 0; width: 100%; max-width: none; padding: 6px 12px; gap: 2px; }
+.ed-toolbar .sep { margin: 0 4px; }
+.ed-toolbar button { display: inline-flex; align-items: center; justify-content: center; }
+.ed-toolbar button svg { display: block; width: 16px; height: 16px; }
+.ed-toolbar input[type="color"] { width: 22px; height: 22px; border: 0; padding: 0; background: transparent; cursor: pointer; }
+.tb-color-lbl {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 3px 5px; border-radius: 7px; cursor: pointer;
+}
+.tb-color-lbl:hover { background: var(--panel); }
+.tb-color-lbl .tc-a {
+  font-weight: 700; font-size: 13px; line-height: 1.1; padding: 0 1px;
+  border-bottom: 3px solid var(--accent);
+}
+.tb-color-lbl svg { display: block; }
+
+/* ---------- Paper: themed in both themes, prototype geometry ---------- */
+.ed-paper {
+  background: var(--paper); color: var(--ink);
+  max-width: 1020px; padding: 56px 68px; border-radius: 6px;
+  border: 1px solid var(--line);
+  min-height: calc(100vh - 190px);
+  transition: background 0.2s;
+}
+[data-theme="dark"] .ed-paper { border-color: var(--line); }
+.ed-paper td, .ed-paper th { border-color: var(--line); }
+@media (max-width: 900px) { .ed-paper { padding: 30px 20px; } }
+
+/* ---------- Left panel: panel background, prototype search + heads ---------- */
+.ed-side { background: var(--panel); display: flex; flex-direction: column; gap: 16px; }
+.ed-side.pv-side-hidden { display: none; }
+.side-search-box {
+  display: flex; align-items: center; gap: 8px;
+  border: 1px solid var(--line); border-radius: 9px;
+  padding: 7px 10px; background: var(--panel);
+}
+.side-search-box svg { width: 15px; height: 15px; color: var(--ink-3); flex: 0 0 15px; }
+.side-search-box input {
+  flex: 1; min-width: 0; width: 100%;
+  border: 0; outline: 0; background: transparent; font-size: 13px; color: var(--ink);
+}
+.side-head, .ed-side h4 {
+  font-size: 11.5px; font-weight: 700; color: var(--ink-3);
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+.side-head-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.ed-side h4.side-section-head { font-size: 11.5px; margin: 0 0 6px; }
+.side-section-head .chev { display: inline-flex; }
+.side-section-head .chev svg { width: 13px; height: 13px; }
+.tab-add-btn {
+  width: 22px; height: 22px; border-radius: 6px; flex: 0 0 22px;
+  border: 1px solid var(--line); background: var(--panel); color: var(--ink-2);
+  display: inline-flex; align-items: center; justify-content: center; padding: 0;
+}
+.tab-add-btn:hover { border-color: var(--accent); color: var(--accent-ink); }
+.tab-add-btn svg { width: 14px; height: 14px; }
+
+/* Tabs: bordered rows with their own dots menu + inline rename */
+.doc-tab {
+  display: flex; align-items: center; gap: 4px; width: 100%;
+  padding: 6px 8px; margin-bottom: 2px; cursor: pointer;
+  border: 1px solid transparent; border-radius: 8px;
+  font-size: 14px; color: var(--text); text-align: left; background: none;
+}
+.doc-tab:hover { background: var(--panel-2); }
+.doc-tab.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.doc-tab .tab-name { flex: 1; min-width: 0; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tab-dots {
+  border: 0; background: transparent; color: var(--ink-3); border-radius: 6px;
+  padding: 1px 4px; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center;
+}
+.tab-dots:hover { background: var(--panel); color: var(--ink); }
+.tab-dots svg { width: 16px; height: 16px; display: block; }
+.tab-name-input {
+  flex: 1; min-width: 0; border: 1px solid var(--accent); border-radius: 6px;
+  padding: 3px 6px; font-size: 13px; background: var(--panel); color: var(--ink); outline: 0;
+}
+.side-prompt .pin-mini { color: var(--accent); display: inline-flex; vertical-align: -2px; margin-right: 4px; }
+.side-prompt .pin-mini svg { width: 12px; height: 12px; }
+.side-show-btn { align-self: flex-start; margin: 12px 0 0 12px; flex: 0 0 auto; }
+.pv-img-slot .pv-slot-ic svg { width: 26px; height: 26px; }
+
+/* ---------- AI panel: 340px, sparkle header ---------- */
+.ed-ai-panel { width: 340px; flex: 0 0 340px; }
+.ed-ai-panel .ai-head .ai-spark-ic { display: inline-flex; color: var(--accent); }
+.ed-ai-panel .ai-head .ai-spark-ic svg { display: block; }
+.ed-ai-panel .ai-head .icon-btn svg { width: 16px; height: 16px; display: block; }
+
+/* ---------- Page setup: fixed 8-column swatch grid, wide modal ---------- */
+.ps-modal-card { max-width: 640px; }
+.ps-colors { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; }
+.ps-sw {
+  height: 34px; border-radius: 8px; border: 1px solid var(--line);
+  cursor: pointer; padding: 0; position: relative; background: var(--panel);
+}
+.ps-sw:hover { border-color: var(--ink-3); }
+.ps-sw.sel { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.ps-sw.def {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: var(--ink-2); background: var(--panel);
+}
+.ps-custom-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; font-size: 13px; color: var(--ink-2); }
+.ps-custom-row input[type="color"] {
+  width: 44px; height: 32px; border: 1px solid var(--line); border-radius: 8px;
+  padding: 2px; background: var(--panel); cursor: pointer;
+}
+
+/* Keep style.css's small-screen behaviour: the side panel is hidden
+   under 900px (the flex display above must not override that). */
+@media (max-width: 899px) { .ed-side { display: none; } }
+
+/* ---------- Note editor paper/body ---------- */
+#note-view .note-paper { max-width: 880px; }
+.nt-body { outline: none; min-height: 520px; font-size: 16px; line-height: 1.75; word-break: break-word; }
+.nt-body:empty::before { content: "Write your note…"; color: var(--ink-3); }
+.nt-body img { max-width: 100%; border-radius: 6px; }
