@@ -90,8 +90,8 @@ export function modelId(provider, display) {
 // vault shape. When the shipped set changes, bump TEMPLATES_VERSION: the
 // migration in VaultStore then swaps the built-ins on existing installs
 // while keeping every user-made (custom) template untouched.
-const TEMPLATE_GROUP_COLORS = { Image: '#D97706', Video: '#DB2777', Coding: '#1A56DB', Writing: '#7C3AED', Business: '#0F766E', Study: '#059669' };
-export const TEMPLATES_VERSION = 3;
+const TEMPLATE_GROUP_COLORS = { 'Image Prompts': '#2563EB', 'Video / Flow': '#7C3AED', Coding: '#EA580C', Writing: '#D97706', 'Business & Marketing': '#E11D48', Study: '#0284C7' };
+export const TEMPLATES_VERSION = 5;
 
 export function seedTemplates() {
   return TEMPLATES.map((t) => ({
@@ -117,7 +117,7 @@ function seedVault() {
     templates: seedTemplates(),
     activity: [],
     settings: {
-      theme: 'light',
+      theme: 'system',
       defaultFont: 'Inter',
       onboardingSeen: false,
       googleClientId: '',
