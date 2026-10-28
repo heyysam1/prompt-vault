@@ -11,13 +11,13 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/heyysam1/prompt-vault/releases"><img src="https://img.shields.io/badge/release-v1.0.2-brightgreen" alt="Release v1.0.2" /></a>
+  <a href="https://github.com/heyysam1/prompt-vault/releases"><img src="https://img.shields.io/badge/release-v1.0.3-brightgreen" alt="Release v1.0.3" /></a>
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platform: Windows, macOS, Linux" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-brightgreen" alt="License: MIT" /></a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/heyysam1/prompt-vault/releases/latest">Download Prompt Vault (v1.0.2)</a> •
+  <a href="https://github.com/heyysam1/prompt-vault/releases/latest">Download Prompt Vault (v1.0.3)</a> •
   <a href="#-features">Features</a> •
   <a href="#-screenshots">Screenshots</a> •
   <a href="#security-overview">Security</a> •
@@ -68,12 +68,12 @@ Everything works fully offline. Your data lives on your computer, and it only go
 
 | Your computer | ⬇️ Download this file | How to install |
 | --- | --- | --- |
-| **Windows 10 / 11** | `Prompt.Vault_1.0.2_x64-setup.exe` | Double-click it and follow the installer |
-| **Windows (alternative)** | `Prompt.Vault_1.0.2_x64_en-US.msi` | Double-click it and follow the installer |
-| **Mac with Apple Silicon** (M1, M2, M3, M4) | `Prompt.Vault_1.0.2_aarch64.dmg` | Open it, then drag **Prompt Vault** into **Applications** |
-| **Mac with an Intel chip** | `Prompt.Vault_1.0.2_x64.dmg` | Open it, then drag **Prompt Vault** into **Applications** |
-| **Linux, any distribution** | `Prompt.Vault_1.0.2_amd64.AppImage` | Right-click → Properties → allow executing as a program, then double-click |
-| **Linux, Ubuntu / Debian / Mint** | `Prompt.Vault_1.0.2_amd64.deb` | Double-click to install with your software centre, or run `sudo dpkg -i <file>` |
+| **Windows 10 / 11** | `Prompt.Vault_1.0.3_x64-setup.exe` | Double-click it and follow the installer |
+| **Windows (alternative)** | `Prompt.Vault_1.0.3_x64_en-US.msi` | Double-click it and follow the installer |
+| **Mac with Apple Silicon** (M1, M2, M3, M4) | `Prompt.Vault_1.0.3_aarch64.dmg` | Open it, then drag **Prompt Vault** into **Applications** |
+| **Mac with an Intel chip** | `Prompt.Vault_1.0.3_x64.dmg` | Open it, then drag **Prompt Vault** into **Applications** |
+| **Linux, any distribution** | `Prompt.Vault_1.0.3_amd64.AppImage` | Right-click → Properties → allow executing as a program, then double-click |
+| **Linux, Ubuntu / Debian / Mint** | `Prompt.Vault_1.0.3_amd64.deb` | Double-click to install with your software centre, or run `sudo dpkg -i <file>` |
 
 **Not sure which Mac you have?** Click the Apple menu → *About This Mac*. If it says "Apple M1" (or M2, M3, M4), download the `aarch64` file. If it says "Intel", download the `x64` file.
 
@@ -89,12 +89,35 @@ Prompt Vault is a new, unsigned app, so your system may warn you the first time 
 
 ## 📸 Screenshots
 
-<!-- Screenshots to be added before the public launch: -->
-<!-- ![All Prompts](docs/screenshots/all-prompts.png) -->
-<!-- ![Editor](docs/screenshots/editor.png) -->
-<!-- ![Insights](docs/screenshots/insights.png) -->
+**All Prompts, your library at a glance**
 
-*Screenshots coming with the launch post. The app itself opens at a comfortable 1280 × 800 window, in a cream light theme or a neutral dark theme.*
+![All Prompts, dark theme](docs/screenshots/all-prompts-dark.png)
+
+![All Prompts, light theme](docs/screenshots/all-prompts-light.png)
+
+**The document editor**
+
+![Editor, dark theme](docs/screenshots/editor-dark.png)
+
+![Editor, light theme](docs/screenshots/editor-light.png)
+
+**Templates gallery**
+
+![Templates](docs/screenshots/templates-dark.png)
+
+**Insights: streaks, activity and most used prompts**
+
+![Insights](docs/screenshots/insights-dark.png)
+
+**First-launch guide**
+
+![First-launch guide](docs/screenshots/guide-dark.png)
+
+**Settings**
+
+![Settings](docs/screenshots/settings-dark.png)
+
+*The app opens at a comfortable 1280 × 800 window, in a cream light theme or a neutral dark theme.*
 
 ---
 
