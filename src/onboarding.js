@@ -1,9 +1,9 @@
 // First-time onboarding guide.
-// Shows once on first launch: a 4-step introduction popup.
-//  1) Welcome - all your prompts in one place
-//  2) Add prompts - the + button, Import, Templates
-//  3) Search & AI - keyword, meaning-based search, AI Chat
-//  4) Stay safe - Google sign-in for Drive backup + your own API key for AI
+// Shows once on first launch: a 4-step introduction card on a blurred
+// indigo/blue gradient full-window backdrop:
+// centred 480px card, 64px accent-soft icon tile, 19px title, 14px
+// body, 8px progress dots, Skip left / Continue right, final button
+// "Get Started". Step text and icons are the prototype's own.
 // Skip / finish / Esc / outside click all mark the guide as seen
 // (settings.onboardingSeen in the vault data, so it persists in the app
 // data folder and never pops up on its own again).
@@ -11,109 +11,59 @@
 
 import { store } from './store.js';
 
+// Prototype GUIDE_STEPS (prototype index.html, welcome guide section).
 const STEPS = [
   {
-    icon: '▦',
-    art: 'vault',
+    icon: 'logo',
     title: 'Welcome to Prompt Vault',
-    body: 'Every prompt you have ever written, saved in one calm place. No more hunting through chats, notes and screenshots when you need that one perfect prompt again.',
-    points: [
-      ['▦', 'All Prompts', 'Your whole library as clean, readable cards'],
-      ['📌', 'Pin & Recent', 'The prompts you use most, always one click away'],
-    ],
+    text: 'Every prompt you rely on lives here, in one calm place. No more hunting through chats, notes and screenshots to find that one prompt again.',
   },
   {
-    icon: '+',
-    art: 'add',
-    title: 'Add prompts in seconds',
-    body: 'Start from a blank page, a ready-made template, or a file you already have. Writing feels like a document, and everything saves automatically as you type.',
-    points: [
-      ['+', 'The + button', 'New prompt, from template, or a new note'],
-      ['▤', 'Templates', 'Ready formats for writing, coding, study and more'],
-      ['⇅', 'Import', 'Bring prompts in from TXT, Markdown or JSON files'],
-    ],
+    icon: 'plus',
+    title: 'Add prompts your way',
+    text: 'Tap the + button for a blank prompt, start from a ready-made Template in the gallery, or Import the prompt files you already have.',
   },
   {
-    icon: '✦',
-    art: 'search',
-    title: 'Find anything, even by meaning',
-    body: 'Search finds your words instantly and highlights them on the card. Connect your own AI key and you can also search by meaning, or just describe what you are looking for in AI Chat.',
-    points: [
-      ['⌕', 'Search', 'Type a word, see it highlighted in the preview'],
-      ['✦', 'AI Chat', 'Describe the prompt you need, get matching cards'],
-    ],
+    icon: 'search',
+    title: 'Find it, even without the name',
+    text: 'Search understands meaning, not just titles. Describe what the prompt does, or ask in AI Chat, and the right prompt comes up.',
   },
   {
-    icon: '☁',
-    art: 'sync',
-    title: 'Backed up, and truly yours',
-    body: 'Sign in with Google and your library backs up to your own Google Drive, so it can always be restored. Your AI keys stay on this computer only, and everything works fully offline.',
-    points: [
-      ['G', 'Sign in with Google', 'Drive backup and restore, from Account & Sync'],
-      ['⚿', 'Your API key', 'Add a key in Account & Sync to switch on AI features'],
-    ],
+    icon: 'drive',
+    title: 'Back up & switch on AI',
+    text: 'Sign in with Google and your whole library backs up to your Google Drive. Add your own AI API key in Account & Sync to unlock AI Chat and the editor\'s AI Assistant.',
   },
 ];
+
+// Prototype GUIDE_ICONS: step 1 is the app logo image, the rest are
+// the prototype's 30px stroke SVGs.
+const GUIDE_ICONS = {
+  logo: '<img src="/logo.png" alt="" />',
+  plus: '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  search: '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>',
+  drive: '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 0 0 .4-8.97 6 6 0 0 0-11.7 1.22A4 4 0 0 0 6.5 19z"/><path d="M12 21v-8M8.8 16.2L12 13l3.2 3.2"/></svg>',
+};
 
 let current = 0;
 let rootEl = null;
 let keyHandler = null;
-
-function artHTML(kind) {
-  // Small decorative scenes built from the app logo + simple shapes.
-  if (kind === 'vault') {
-    return `<div class="ob-art">
-      <img src="/logo.png" alt="" class="ob-art-logo" />
-      <div class="ob-art-card ob-c1"></div><div class="ob-art-card ob-c2"></div><div class="ob-art-card ob-c3"></div>
-    </div>`;
-  }
-  if (kind === 'add') {
-    return `<div class="ob-art">
-      <div class="ob-fab">+</div>
-      <div class="ob-art-chip ob-chip1">Blank Prompt</div>
-      <div class="ob-art-chip ob-chip2">From Template</div>
-      <div class="ob-art-chip ob-chip3">Import File</div>
-    </div>`;
-  }
-  if (kind === 'search') {
-    return `<div class="ob-art">
-      <div class="ob-searchbar"><span>⌕</span><span class="ob-search-text">a prompt for study notes</span></div>
-      <div class="ob-art-card ob-s1"><mark>study notes</mark> maker</div>
-      <div class="ob-art-card ob-s2">Quiz me on any topic</div>
-    </div>`;
-  }
-  return `<div class="ob-art">
-    <div class="ob-cloud">☁</div>
-    <div class="ob-art-chip ob-chip1">Google Drive backup</div>
-    <div class="ob-art-chip ob-chip2">API key stays on this PC</div>
-  </div>`;
-}
 
 function render() {
   const step = STEPS[current];
   const last = current === STEPS.length - 1;
   rootEl.innerHTML = `
   <div class="ob-backdrop" id="ob-backdrop">
-    <div class="ob-card" role="dialog" aria-modal="true" aria-label="Welcome guide, step ${current + 1} of ${STEPS.length}">
-      <button class="ob-close" id="ob-close" aria-label="Close guide">✕</button>
+    <div class="ob-card" role="dialog" aria-modal="true" aria-label="Welcome guide">
       <div class="ob-slide" key="${current}">
-        ${artHTML(step.art)}
-        <div class="ob-step-tag">Step ${current + 1} of ${STEPS.length}</div>
+        <div class="ob-icon">${GUIDE_ICONS[step.icon] || ''}</div>
         <h2 class="ob-title">${step.title}</h2>
-        <p class="ob-body">${step.body}</p>
-        <div class="ob-points">
-          ${step.points.map(([ic, t, d]) => `
-            <div class="ob-point">
-              <span class="ob-point-ic">${ic}</span>
-              <span><b>${t}</b><small>${d}</small></span>
-            </div>`).join('')}
-        </div>
+        <p class="ob-body">${step.text}</p>
+      </div>
+      <div class="ob-dots" aria-hidden="true">
+        ${STEPS.map((_, i) => `<button class="ob-dot ${i === current ? 'on' : ''}" data-dot="${i}" aria-label="Go to step ${i + 1}"></button>`).join('')}
       </div>
       <div class="ob-footer">
         <button class="btn ghost" id="ob-skip">Skip</button>
-        <div class="ob-dots" aria-hidden="true">
-          ${STEPS.map((_, i) => `<button class="ob-dot ${i === current ? 'on' : ''}" data-dot="${i}" aria-label="Go to step ${i + 1}"></button>`).join('')}
-        </div>
         <button class="btn primary ob-next" id="ob-next">${last ? 'Get Started' : 'Continue'}</button>
       </div>
     </div>
@@ -124,7 +74,6 @@ function render() {
     else finish();
   });
   rootEl.querySelector('#ob-skip').addEventListener('click', finish);
-  rootEl.querySelector('#ob-close').addEventListener('click', finish);
   rootEl.querySelector('#ob-backdrop').addEventListener('mousedown', (e) => {
     if (e.target.id === 'ob-backdrop') finish();
   });
