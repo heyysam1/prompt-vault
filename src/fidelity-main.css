@@ -39,7 +39,10 @@
 .prompt-grid.compact .fid-card-title { font-size: 14px; }
 .prompt-grid.list .prompt-card { flex-direction: row; align-items: stretch; }
 .prompt-grid.list .card-preview {
-  width: 180px; flex: 0 0 180px; height: auto; min-height: 104px; padding: 11px 13px;
+  /* Fixed height like the other views: height:auto let the full prompt
+     text stretch the row thousands of pixels tall and push the title
+     off screen. */
+  width: 180px; flex: 0 0 180px; height: 104px; min-height: 0; overflow: hidden; padding: 11px 13px;
   border-right: 1px solid var(--line-2);
   -webkit-mask-image: linear-gradient(180deg, #000 72%, transparent 99%);
   mask-image: linear-gradient(180deg, #000 72%, transparent 99%);
@@ -132,7 +135,11 @@
 .fid-create-opt b { display: block; font-size: 14px; font-weight: 600; }
 .fid-create-opt .fid-co-desc { font-size: 12.5px; color: var(--ink-2); display: block; }
 #fab-menu.fid-fab-menu { background: transparent; border: 0; box-shadow: none; padding: 0; min-width: 0; animation: none; }
-.fid-create-menu-pop { position: fixed; }
+/* The pop wrapper is position:fixed, which makes it its own stacking
+   context: without a z-index here it sits at level 0 and the sticky
+   library toolbar (z-index 25) paints straight through the menu card,
+   no matter how high the card's own z-index is. Lift the wrapper. */
+.fid-create-menu-pop { position: fixed; z-index: 300; }
 
 /* ---------- AI Chat (prototype #view-chat) ---------- */
 .fid-chat-gate { text-align: left; }
