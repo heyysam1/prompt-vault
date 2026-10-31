@@ -64,7 +64,7 @@ function buildToolbarHTML(pfx, { zoom = 100, font = 'Inter' } = {}) {
       <button data-cmd="italic" title="Italic"><i>I</i></button>
       <button data-cmd="underline" title="Underline"><u>U</u></button>
       <button data-cmd="strikeThrough" title="Strikethrough"><s>S</s></button>
-      <label class="tb-color-lbl" title="Text colour"><span class="tc-a">A</span><input type="color" id="${pfx}-color" value="#2B2520" /></label>
+      <label class="tb-color-lbl" title="Text colour"><span class="tc-a">A</span><input type="color" id="${pfx}-color" value="${document.documentElement.dataset.theme === 'dark' ? '#FFFFFF' : '#000000'}" /></label>
       <label class="tb-color-lbl" title="Highlight colour">${TB.hilite}<input type="color" id="${pfx}-hilite" value="#FDE047" /></label>
       <span class="sep"></span>
       <button id="${pfx}-link" title="Insert link">${ICONS.link}</button>
@@ -83,6 +83,7 @@ function buildToolbarHTML(pfx, { zoom = 100, font = 'Inter' } = {}) {
 }
 
 let current = null;   // prompt object being edited
+let renderedPromptId = null; // prompt whose HTML is currently in #ed-paper
 let onCloseCb = null;
 let aiOpen = false;
 let imgBarEl = null;
@@ -106,14 +107,19 @@ export function openEditor(promptId, opts = {}) {
   render();
   document.getElementById('editor-view').classList.remove('hidden');
   document.getElementById('fab-wrap').classList.add('hidden');
+  // Mouse side-button history (main.js) tracks full-screen locations.
+  window.dispatchEvent(new CustomEvent('pv:loc', { detail: { kind: 'editor', id: promptId } }));
 }
 
 export function closeEditor(showToast = true) {
+  if (markEdited._dt) { clearTimeout(markEdited._dt); markEdited._dt = null; }
   syncFromDOM();
   store.saveNow();
   document.getElementById('editor-view').classList.add('hidden');
   hideImgBar(); hideLinkCard();
   current = null;
+  renderedPromptId = null;
+  window.dispatchEvent(new CustomEvent('pv:editor-closed'));
   if (showToast) toast('Saved');
   if (onCloseCb) onCloseCb();
 }
@@ -148,23 +154,41 @@ function setSaveSaving(saving) {
   if (el) el.classList.toggle('saving', !!saving);
 }
 
+// Autosave is debounced (Sami, 2026-10-28): syncing the DOM on EVERY
+// input event meant serialising the whole document and rebuilding the
+// outline per keystroke, which lagged badly on large prompts and on
+// bulk changes (select a big section, recolour it). Now an edit only
+// lights the saving indicator at once; the actual sync + save + outline
+// runs once, 700ms after the last change. Anything that needs the
+// stored HTML immediately (closing, switching tabs, re-rendering)
+// flushes the pending edit first, so nothing is ever lost.
 function markEdited() {
+  if (!current) return;
+  setSaveSaving(true);
+  clearTimeout(markEdited._st);
+  markEdited._st = setTimeout(() => setSaveSaving(false), 900);
+  clearTimeout(markEdited._dt);
+  markEdited._dt = setTimeout(() => { markEdited._dt = null; flushEdited(); }, 700);
+}
+function flushEdited() {
+  if (markEdited._dt) { clearTimeout(markEdited._dt); markEdited._dt = null; }
+  if (!current || !document.getElementById('ed-paper')) return;
   syncFromDOM();
-  store.logActivityDebounced?.('edited', current.id, current.title);
   if (!markEdited._logged) {
     store.logActivity('edited', current.id, current.title);
     markEdited._logged = true;
     setTimeout(() => (markEdited._logged = false), 30000);
   }
-  setSaveSaving(true);
-  clearTimeout(markEdited._st);
-  markEdited._st = setTimeout(() => setSaveSaving(false), 650);
   store.save(); // silent autosave, no "Saving..." text anywhere
   buildOutline();
 }
 
 function render() {
   const p = current;
+  // Re-rendering the prompt that is already on screen (pin toggle,
+  // page setup): flush any debounced edit first so the fresh DOM is
+  // built from the latest text, not the last saved copy.
+  if (p && renderedPromptId === p.id && document.getElementById('ed-paper')) flushEdited();
   const root = document.getElementById('editor-view');
   const tab = activeTabObj();
   const zoom = p._zoom || 100;
@@ -204,6 +228,7 @@ function render() {
   renderSide();
   renderAiPanel();
   applyPageSetup();
+  renderedPromptId = p.id;
 }
 
 function fontOptions(selected) {
@@ -460,9 +485,50 @@ function renderAiPanel() {
   panel.querySelectorAll('[data-quick]').forEach((b) => b.addEventListener('click', () => send(b.dataset.quick)));
 }
 
+// Whole colour control clickable, selection preserved (Sami,
+// 2026-10-28): the toolbar colour control is a label holding an "A"
+// (or highlight icon) plus the colour input swatch. Clicking only the
+// swatch used to work; clicking the letter stole focus, collapsed the
+// editor selection and applied nothing. Now a mousedown anywhere on
+// the label captures the selection first and opens the picker, the
+// label's own activation is suppressed so the picker opens once, and
+// every picker input restores the captured range before applying, so
+// the selected text stays selected and takes the new colour.
+function bindColorControl(editableEl, inputEl, applyFn, afterFn) {
+  if (!inputEl || !editableEl) return;
+  const lbl = inputEl.closest('.tb-color-lbl');
+  let range = null;
+  const capture = () => {
+    const s = window.getSelection();
+    if (s && s.rangeCount && editableEl.contains(s.anchorNode)) range = s.getRangeAt(0).cloneRange();
+  };
+  editableEl.addEventListener('mouseup', capture);
+  editableEl.addEventListener('keyup', capture);
+  if (lbl) {
+    lbl.addEventListener('mousedown', (e) => {
+      capture();
+      if (e.target !== inputEl) { e.preventDefault(); inputEl.click(); }
+    });
+    lbl.addEventListener('click', (e) => { if (e.target !== inputEl) e.preventDefault(); });
+  }
+  inputEl.addEventListener('input', () => {
+    editableEl.focus();
+    if (range) { const s = window.getSelection(); s.removeAllRanges(); s.addRange(range); }
+    applyFn(inputEl.value);
+    if (afterFn) afterFn();
+    capture();
+  });
+}
+
 function wire() {
   const p = current;
   const paper = document.getElementById('ed-paper');
+  // If the app loses focus mid-edit (user switches away), flush the
+  // debounced autosave instead of waiting for the timer.
+  if (!wire._blurBound) {
+    wire._blurBound = true;
+    window.addEventListener('blur', () => { if (markEdited._dt) flushEdited(); });
+  }
   document.getElementById('ed-back').addEventListener('click', () => closeEditor(true));
   document.getElementById('ed-title-input').addEventListener('input', markEdited);
   document.getElementById('ed-pin').addEventListener('click', () => { p.pinned = !p.pinned; store.save(); render(); });
@@ -536,8 +602,10 @@ function wire() {
   };
   document.getElementById('tb-size-minus').addEventListener('click', () => applySize(-1));
   document.getElementById('tb-size-plus').addEventListener('click', () => applySize(1));
-  document.getElementById('tb-color').addEventListener('input', (e) => document.execCommand('foreColor', false, e.target.value));
-  document.getElementById('tb-hilite').addEventListener('input', (e) => { document.execCommand('hiliteColor', false, e.target.value) || document.execCommand('backColor', false, e.target.value); });
+  bindColorControl(paper, document.getElementById('tb-color'),
+    (v) => document.execCommand('foreColor', false, v), markEdited);
+  bindColorControl(paper, document.getElementById('tb-hilite'),
+    (v) => { document.execCommand('hiliteColor', false, v) || document.execCommand('backColor', false, v); }, markEdited);
   document.getElementById('tb-link').addEventListener('click', () => openLinkPrompt());
   document.getElementById('tb-image').addEventListener('click', pickImage);
   document.getElementById('tb-table').addEventListener('click', () => {
@@ -908,6 +976,10 @@ function hideLinkCard() { linkCardEl?.remove(); linkCardEl = null; }
 // Notes via window.__pvNavigate('notes').
 
 let noteCurrent = null;
+let noteCloseFn = null;
+// Lets other code (mouse side-button history in main.js) close the
+// note editor through its own save-and-close path.
+export function closeNoteEditor() { return noteCloseFn ? noteCloseFn() : undefined; }
 
 function noteBodyHTML(body) {
   const raw = String(body || '');
@@ -991,6 +1063,7 @@ export async function openNoteEditor(noteId) {
   </div>`;
   view.classList.remove('hidden');
   document.getElementById('fab-wrap')?.classList.add('hidden');
+  window.dispatchEvent(new CustomEvent('pv:loc', { detail: { kind: 'note', id: noteId } }));
 
   const titleEl = view.querySelector('#nt-title');
   const bodyEl = view.querySelector('#nt-body');
@@ -998,28 +1071,45 @@ export async function openNoteEditor(noteId) {
   const statusEl = view.querySelector('#nt-save-status');
   let noteZoom = 100;
 
-  const save = () => {
+  // Same debounced autosave as the prompt editor: reading the whole
+  // body HTML on every keystroke is what made big notes lag. The sync
+  // runs 700ms after the last change; closing flushes it first.
+  const syncNote = () => {
     n.title = titleEl.value;
     n.body = bodyEl.innerHTML;
     n.updatedAt = nowISO();
     store.save(); // silent autosave, same pattern as the prompt editor
+  };
+  const save = () => {
     statusEl?.classList.add('saving');
     clearTimeout(save._st);
-    save._st = setTimeout(() => statusEl?.classList.remove('saving'), 650);
+    save._st = setTimeout(() => statusEl?.classList.remove('saving'), 900);
+    clearTimeout(save._dt);
+    save._dt = setTimeout(() => { save._dt = null; syncNote(); }, 700);
+  };
+  const flushNote = () => {
+    if (save._dt) { clearTimeout(save._dt); save._dt = null; }
+    syncNote();
   };
   const closeNote = async () => {
-    save();
+    flushNote();
     await store.saveNow();
     view.classList.add('hidden');
     noteCurrent = null;
+    noteCloseFn = null;
+    window.dispatchEvent(new CustomEvent('pv:note-closed'));
     toast('Saved');
     window.__pvNavigate?.('notes');
   };
+  noteCloseFn = closeNote;
   const deleteNote = () => {
+    if (save._dt) { clearTimeout(save._dt); save._dt = null; }
     n.deletedAt = nowISO();
     store.save();
     view.classList.add('hidden');
     noteCurrent = null;
+    noteCloseFn = null;
+    window.dispatchEvent(new CustomEvent('pv:note-closed'));
     toast('Note moved to Trash');
     window.__pvNavigate?.('notes');
   };
@@ -1102,8 +1192,10 @@ export async function openNoteEditor(noteId) {
   };
   view.querySelector('#nt-size-minus').addEventListener('click', () => applyNoteSize(-1));
   view.querySelector('#nt-size-plus').addEventListener('click', () => applyNoteSize(1));
-  view.querySelector('#nt-color').addEventListener('input', (e) => { bodyEl.focus(); document.execCommand('foreColor', false, e.target.value); });
-  view.querySelector('#nt-hilite').addEventListener('input', (e) => { bodyEl.focus(); document.execCommand('hiliteColor', false, e.target.value) || document.execCommand('backColor', false, e.target.value); });
+  bindColorControl(bodyEl, view.querySelector('#nt-color'),
+    (v) => document.execCommand('foreColor', false, v), save);
+  bindColorControl(bodyEl, view.querySelector('#nt-hilite'),
+    (v) => { document.execCommand('hiliteColor', false, v) || document.execCommand('backColor', false, v); }, save);
   view.querySelector('#nt-link').addEventListener('click', openNoteLink);
   view.querySelector('#nt-image').addEventListener('click', pickNoteImage);
   view.querySelector('#nt-table').addEventListener('click', insertNoteTable);
