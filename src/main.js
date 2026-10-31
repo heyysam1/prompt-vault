@@ -2,7 +2,7 @@ import './style.css';
 import './fidelity-main.css';
 import { ICONS } from './icons.js';
 import { store, uid, nowISO, esc, fmtDate, plainText, promptHTML, promptText, FONT_LIST, PROVIDERS } from './store.js';
-import { openEditor, closeEditor, toast, openNoteEditor } from './editor.js';
+import { openEditor, closeEditor, toast, openNoteEditor, closeNoteEditor } from './editor.js';
 import { showOnboarding } from './onboarding.js';
 import { scheduleUpdateCheck, checkForUpdates, currentVersion } from './updater.js';
 import { openUrl } from '@tauri-apps/plugin-opener';
@@ -113,7 +113,95 @@ function navigate(nav) {
      notes: renderNotes, templates: renderTemplates, insights: renderInsights,
      importexport: renderImportExport, trash: renderTrash, account: renderAccount,
      settings: renderSettings }[nav] || renderLibrary)();
+  pvRecord({ kind: 'view', nav });
 }
+
+// ---------- Mouse side buttons (back / forward) ----------
+// Why they did nothing (Sami, 2026-10-28): the thumb buttons only
+// work when the app itself keeps a navigation history, and this
+// single-page app never did, so the webview had nowhere to go. The
+// app now keeps its own location stack: sidebar views plus the
+// full-screen overlays (prompt editor, note editor, template
+// preview). Button 3 walks it back, button 4 walks it forward.
+const pvHist = { stack: [{ kind: 'view', nav: 'all' }], idx: 0, applying: false };
+function pvLocKey(loc) { return loc.kind + ':' + (loc.nav || loc.id || ''); }
+function pvRecord(loc) {
+  if (pvHist.applying || !loc) return;
+  if (pvLocKey(pvHist.stack[pvHist.idx]) === pvLocKey(loc)) return;
+  pvHist.stack = pvHist.stack.slice(0, pvHist.idx + 1);
+  pvHist.stack.push(loc);
+  pvHist.idx = pvHist.stack.length - 1;
+}
+// The note editor's close is async and ends by navigating to Notes
+// itself; during a history jump that final navigation must not fire,
+// or it would drag the app back to Notes after the jump. Swallow just
+// that one navigation and let the caller go where the stack says.
+function closeNoteEditorQuietly() {
+  const orig = window.__pvNavigate;
+  window.__pvNavigate = () => {};
+  Promise.resolve(closeNoteEditor()).finally(() => { window.__pvNavigate = orig; });
+}
+function pvApplyLoc(loc) {
+  const editorView = document.getElementById('editor-view');
+  const noteView = document.getElementById('note-view');
+  const tplView = document.getElementById('template-view');
+  const editorOpen = editorView && !editorView.classList.contains('hidden');
+  const noteOpen = noteView && !noteView.classList.contains('hidden');
+  const tplOpen = tplView && !tplView.classList.contains('hidden');
+  if (loc.kind === 'view') {
+    if (tplOpen) tplView.classList.add('hidden');
+    if (noteOpen) closeNoteEditorQuietly();
+    if (editorOpen) closeEditor(false); // its onClose navigates underneath
+    // The prompt editor's close already navigated to the view below
+    // it; the note editor's was swallowed, so it needs the explicit
+    // navigation. Plain view-to-view always navigates.
+    if (noteOpen) navigate(loc.nav);
+    else if (state.nav !== loc.nav || !editorOpen) navigate(loc.nav);
+    return;
+  }
+  if (loc.kind === 'editor') {
+    if (noteOpen) closeNoteEditorQuietly();
+    if (tplOpen) tplView.classList.add('hidden');
+    if (editorOpen) closeEditor(false);
+    if (store.getPrompt(loc.id)) openEditor(loc.id, { onClose: () => navigate(state.nav) });
+    return;
+  }
+  if (loc.kind === 'note') {
+    if (editorOpen) closeEditor(false);
+    if (tplOpen) tplView.classList.add('hidden');
+    if (!noteOpen && store.getNote(loc.id)) openNote(loc.id);
+    return;
+  }
+  if (loc.kind === 'template') {
+    if (editorOpen) closeEditor(false);
+    if (noteOpen) closeNoteEditorQuietly();
+    openTemplatePreview(loc.id);
+  }
+}
+function pvGo(dir) {
+  const next = pvHist.idx + dir;
+  if (next < 0 || next >= pvHist.stack.length) return;
+  pvHist.idx = next;
+  pvHist.applying = true;
+  try { pvApplyLoc(pvHist.stack[next]); } finally { pvHist.applying = false; }
+}
+// An overlay closed through its own Back button counts as one step
+// back in the stack, so Forward can reopen it afterwards.
+function pvOverlayClosed(kind) {
+  if (pvHist.applying) return;
+  const cur = pvHist.stack[pvHist.idx];
+  if (cur && cur.kind === kind) pvGo(-1);
+}
+window.addEventListener('pv:loc', (e) => pvRecord(e.detail));
+window.addEventListener('pv:editor-closed', () => pvOverlayClosed('editor'));
+window.addEventListener('pv:note-closed', () => pvOverlayClosed('note'));
+document.addEventListener('mousedown', (e) => {
+  if (e.button === 3) { e.preventDefault(); pvGo(-1); }
+  else if (e.button === 4) { e.preventDefault(); pvGo(1); }
+});
+document.addEventListener('mouseup', (e) => {
+  if (e.button === 3 || e.button === 4) e.preventDefault();
+});
 
 // ---------- FAB ----------
 function fabPages() { return state.nav === 'all' || state.nav === 'notes'; }
@@ -320,15 +408,27 @@ function renderLibrary() {
   let debounce;
   search.addEventListener('input', () => {
     state.query = search.value;
+    // Keyword/fuzzy search is fully local and needs no AI key: it runs
+    // on every keystroke below. AI semantic search is only an extra
+    // layer on top when a key is connected. The previous query's
+    // semantic results must be dropped at once, or the instant redraw
+    // mixes the old query's matches into the new one.
+    state.semanticResults = null;
+    const queryAtType = state.query;
     clearTimeout(debounce);
     debounce = setTimeout(async () => {
-      state.semanticResults = null;
+      if (state.query !== queryAtType) return; // a newer keystroke owns the box now
       // Preferences switch: AI semantic search off means keyword/fuzzy only.
       if (state.query.trim().length >= 4 && store.data.settings.semanticSearch !== false) {
         const base = filteredPrompts(false);
-        try { state.semanticResults = await semanticSearch(state.query, base, promptText); } catch { state.semanticResults = null; }
+        try {
+          const found = await semanticSearch(state.query, base, promptText);
+          // Apply only if the box still holds the query they were
+          // computed for; a slow reply must not overwrite newer results.
+          if (state.query === queryAtType) state.semanticResults = found;
+        } catch { if (state.query === queryAtType) state.semanticResults = null; }
       }
-      drawGrid();
+      if (state.query === queryAtType) drawGrid();
     }, 220);
     drawGrid();
   });
@@ -904,11 +1004,12 @@ function openTemplatePreview(id) {
     </div>`;
   view.classList.remove('hidden');
   document.getElementById('fab-wrap').classList.add('hidden');
-  view.querySelector('#tpl-back').addEventListener('click', () => { view.classList.add('hidden'); navigate('templates'); });
+  pvRecord({ kind: 'template', id });
+  view.querySelector('#tpl-back').addEventListener('click', () => { view.classList.add('hidden'); navigate('templates'); pvOverlayClosed('template'); });
   view.querySelector('#tpl-use').addEventListener('click', () => useTemplateById(id));
   view.querySelector('#tpl-delete')?.addEventListener('click', () => {
     store.data.templates = store.data.templates.filter((x) => x.id !== id);
-    store.save(); view.classList.add('hidden'); navigate('templates'); toast('Template deleted');
+    store.save(); view.classList.add('hidden'); navigate('templates'); pvOverlayClosed('template'); toast('Template deleted');
   });
 }
 
